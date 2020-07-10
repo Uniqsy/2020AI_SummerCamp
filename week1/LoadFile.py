@@ -14,3 +14,8 @@ def loadCSV(filename):
     rowData = rowData[1:, :]
     dataSet = [[converType(item) for item in data] for data in rowData]
     return dataSet
+
+def splitData(rawData):
+    labelSet = [data[-1] for data in rawData]
+    dataSet = [data[:-1] for data in rawData]
+    return dataSet, labelSet

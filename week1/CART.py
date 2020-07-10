@@ -140,8 +140,7 @@ if __name__ == '__main__':
     rawData = LoadFile.loadCSV(filePath + "cartDS.csv")
 
     # 预处理
-    labelSet = [data[-1] for data in rawData]
-    dataSet = [data[:-1] for data in rawData]
+    dataSet, labelSet = LoadFile.splitData(rawData)
     tree = buildTree(dataSet, labelSet)
 
     # 测试数据
