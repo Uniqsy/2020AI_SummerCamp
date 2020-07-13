@@ -16,6 +16,7 @@ def loadCSV(filename):
     return dataSet
 
 def splitData(rawData):
-    labelSet = [data[-1] for data in rawData]
-    dataSet = [data[:-1] for data in rawData]
+    rawData = pd.DataFrame(rawData)
+    dataSet = rawData.iloc[:, :-1]
+    labelSet = rawData.iloc[:, -1]
     return dataSet, labelSet
