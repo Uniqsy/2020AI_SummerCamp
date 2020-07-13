@@ -10,6 +10,7 @@ def simpleCrossValidation(rawData, rate=0.9):
     testData = rawData.iloc[m:, :]
     return trainData, testData
 
+
 def kFoldCrossValidation(rawData, processFunc, k):
     rawData = pd.DataFrame(rawData)
     n = np.shape(rawData)[0]
@@ -32,4 +33,3 @@ def kFoldCrossValidation(rawData, processFunc, k):
             leastErr = err
             bestModel = model
     return model
-

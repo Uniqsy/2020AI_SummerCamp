@@ -15,6 +15,7 @@ def loadCSV(filename):
     dataSet = [[converType(item) for item in data] for data in rowData]
     return dataSet
 
+
 def splitData(rawData):
     rawData = pd.DataFrame(rawData)
     dataSet = rawData.iloc[:, :-1]

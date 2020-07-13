@@ -3,6 +3,7 @@ import pandas as pd
 import math
 import LoadFile
 
+
 def solveMissingData(dataSet):
     n, m = np.shape(dataSet)
     for x in range(n):
@@ -37,6 +38,7 @@ def cntZero(dataSet, i):
             cnt += 1
     return cnt
 
+
 def calcDist(dataSet, x, y):
     # 计算dataSet中x号数据与y号数据之间的欧氏距离
     n, m = np.shape(dataSet)
@@ -47,6 +49,7 @@ def calcDist(dataSet, x, y):
         z += (dataSet[x][feat] - dataSet[y][feat]) ** 2
     return math.sqrt(z)
 
+
 def minmaxNormalize(dataSet):
     # 数据映射到[0, 1]
     dataSet = pd.DataFrame(dataSet)
@@ -54,6 +57,7 @@ def minmaxNormalize(dataSet):
     maxDf = dataSet.max()
     normalizedSet = (dataSet - minDf) / (maxDf - minDf)
     return normalizedSet
+
 
 def zscoreStanderize(dataSet):
     # 用z-score方法进行数据标准化

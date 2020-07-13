@@ -7,6 +7,7 @@ def sigmoid(x):
     # 计算sigmoid函数
     return 1.0 / (1 + np.exp(-x))
 
+
 def standardize(dataSet):
     # 数据标准化
     resultSet = dataSet.copy()
@@ -25,7 +26,7 @@ def getStandardedMatData(rawData):
     return dataSet, labelSet
 
 
-def batchLogisticRegression(rawData, alpha = 0.001, maxCycles = 500):
+def batchLogisticRegression(rawData, alpha=0.001, maxCycles=500):
     # 批量梯度下降法进行回归
     dataSet, labelSet = getStandardedMatData(rawData)
     n, m = np.shape(dataSet)
@@ -36,7 +37,8 @@ def batchLogisticRegression(rawData, alpha = 0.001, maxCycles = 500):
         weights = weights - alpha * grad
     return weights
 
-def randomLogisticRegression(rawData, alpha = 0.001, maxCycles = 500):
+
+def randomLogisticRegression(rawData, alpha=0.001, maxCycles=500):
     # 随机梯度下降法进行回归
     rawData = pd.DataFrame(rawData)
 
@@ -52,22 +54,23 @@ def randomLogisticRegression(rawData, alpha = 0.001, maxCycles = 500):
         weights = weights - alpha * grad
     return weights
 
-def newtonLogisticRegression(rawData, alpha = 0.001, maxCycles = 500):
+
+def newtonLogisticRegression(rawData, alpha=0.001, maxCycles=500):
     rawData = pd.DataFrame(rawData)
     dataSet, labelSet = getStandardedMatData(rawData)
     n, m = np.shape(dataSet)
     weights = np.zeros((m, 1))
-    
+
     for i in range(maxCycles):
         px = sigmoid(dataSet * weights)
         grad = dataSet.T * (sigmoid(dataSet * weights) - labelSet) / n
-        Hessian = (dataSet.T * np.diag(px.getA1()) * np.diag((1-px).getA1()) * dataSet) / n + 0.001
+        Hessian = (dataSet.T * np.diag(px.getA1()) *
+                   np.diag((1-px).getA1()) * dataSet) / n + 0.001
         weights = weights - Hessian.I * grad
     return weights
 
 
-
-def calcAccuracy(rawData, lrFunc, alpha = 0.001, maxCycles = 500):
+def calcAccuracy(rawData, lrFunc, alpha=0.001, maxCycles=500):
     # 计算回归的准确率
     dataSet, labelSet = getStandardedMatData(rawData)
     dataSize = np.shape(dataSet)[0]
@@ -85,10 +88,10 @@ def calcAccuracy(rawData, lrFunc, alpha = 0.001, maxCycles = 500):
     trainAccuracy = 1 - trainErrCnt / dataSize
     return trainAccuracy
 
+
 if __name__ == "__main__":
     filePath = "F:/2020AI_SummerCamp/dataSet/"
     rawData = LoadFile.loadCSV(filePath + "diabetesN.csv")
     # rawData = pd.read_table(filePath + 'testSet.txt', header=None)
 
     print(calcAccuracy(rawData, newtonLogisticRegression))
-

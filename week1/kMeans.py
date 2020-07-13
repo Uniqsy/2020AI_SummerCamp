@@ -5,7 +5,6 @@ import matplotlib.pyplot as plt
 import matplotlib
 
 
-
 def loadTXT(filename):
     # 读入文件
     def converType(s):
@@ -19,6 +18,7 @@ def loadTXT(filename):
     dataSet = [[converType(item) for item in data] for data in rowData]
     return dataSet
 
+
 def calcL2Dist(x, y):
     # 计算两个向量间的L2距离
     x = np.array(x)
@@ -26,6 +26,7 @@ def calcL2Dist(x, y):
     powDist = ((x - y) ** 2).sum()
     sqDist = math.sqrt(powDist)
     return sqDist
+
 
 def randCentrePoint(dataSet, k):
     # 随机生成k个初始聚类中心
@@ -42,7 +43,8 @@ def randCentrePoint(dataSet, k):
     # 结果为k * m的一个矩阵，每一行表示一个随机中心
     return kCentrePoints
 
-def kMeans(dataSet, k, distMeasureFunc = calcL2Dist, createCentralPoint = randCentrePoint):
+
+def kMeans(dataSet, k, distMeasureFunc=calcL2Dist, createCentralPoint=randCentrePoint):
     n, m = np.shape(dataSet)
 
     # kCentralPoints 为k * m的矩阵，保存生成的聚类中心
@@ -81,12 +83,15 @@ def kMeans(dataSet, k, distMeasureFunc = calcL2Dist, createCentralPoint = randCe
 
         # 重新计算本次分类后新的聚类中心
         for j in range(k):
-            df = pd.DataFrame(follower[j])
-            newMeans = df.mean()
+            if j not in follower:
+                continue
+            # df = pd.DataFrame(follower[j])
+            # newMeans = df.mean()
+            newMeans = np.mean(follower[j], axis=0)
             newMeans = np.array(newMeans)
             if type(lastResult) != int:
                 if (lastResult - kCentralPoints < leastChangeRange).all():
-                   continue
+                    continue
             else:
                 kCentralPoints[j] = newMeans
                 meansVecChanged = True
@@ -95,6 +100,47 @@ def kMeans(dataSet, k, distMeasureFunc = calcL2Dist, createCentralPoint = randCe
         lastResult = kCentralPoints.copy()
 
     return kCentralPoints, clusterAssment
+
+
+def biKmeans(dataSet, k, distMeasureFunc=calcL2Dist):
+    # 内部变量的意义同kMeans
+    n, m = np.shape(dataSet)
+    clusterAssment = np.mat(np.zeros((n, 2)))
+    kCentralPoints = [np.mean(dataSet, axis=0).tolist()[0]]
+
+    for i in range(n):
+        clusterAssment[i, :] = 0, distMeasureFunc(
+            kCentralPoints[0], dataSet[i, :]) ** 2
+
+    nowK = 1
+    while nowK < k:
+        minSSE = float("inf")
+        bestSplitCluster = 0
+        for i in range(nowK):
+            # 取出dataSet中，属于当前聚类的点
+            # 因为《机器学习实战》中的写法真的太香了，自己写的挺麻烦的，这里还是抄了一段
+            # 但是抄完之后觉得，为了代码的简洁，这个给出的结果还是牺牲了不少的可读性的
+            pointsInCurrentCluster = dataSet[np.nonzero(
+                clusterAssment[:, 0].A == i)[0], :]
+            new2CentralPoints, new2ClusterAssment = kMeans(
+                pointsInCurrentCluster, 2)
+            nowSSE = np.sum(new2CentralPoints[:, 1]) + \
+                np.sum(dataSet[np.nonzero(clusterAssment[:, 0].A != i)[0], 1])
+            if nowSSE < minSSE:
+                bestSplitCluster = i
+                best2CentralPoints = new2CentralPoints
+                best2ClusterAssment = new2ClusterAssment
+                minSSE = nowSSE
+        best2ClusterAssment[np.nonzero(best2ClusterAssment[:, 0].A == 0)[
+            0], 0] = bestSplitCluster
+        best2ClusterAssment[np.nonzero(
+            best2ClusterAssment[:, 0].A == 1)] = nowK
+        kCentralPoints[bestSplitCluster] = best2CentralPoints[0, :].tolist()[0]
+        kCentralPoints.append(best2CentralPoints[1, :].tolist()[0])
+        clusterAssment[np.nonzero(clusterAssment[:, 0].A == bestSplitCluster)[
+            0], :] = best2ClusterAssment.copy()
+        nowK += 1
+    return np.mat(kCentralPoints), clusterAssment
 
 
 def drawCluster(kCentralPoints, clusterAssmnt, dataSet, k):
@@ -124,16 +170,21 @@ if __name__ == "__main__":
 
     # 硬编码输入，该数据为西瓜书，西瓜数据集4.0
     rawData = np.array([
-    [0.697, 0.460], [0.774, 0.376], [0.634, 0.264], [0.608, 0.318], [0.556, 0.215],
-    [0.403, 0.237], [0.481, 0.149], [0.437, 0.211], [0.666, 0.091], [0.243, 0.267],
-    [0.245, 0.057], [0.343, 0.099], [0.639, 0.161], [0.657, 0.198], [0.360, 0.370],
-    [0.593, 0.042], [0.719, 0.103], [0.359, 0.188], [0.339, 0.241], [0.282, 0.257],
-    [0.748, 0.232], [0.714, 0.346], [0.483, 0.312], [0.478, 0.437], [0.525, 0.369],
-    [0.751, 0.489], [0.532, 0.472], [0.473, 0.376], [0.725, 0.445], [0.446, 0.459]])
+        [0.697, 0.460], [0.774, 0.376], [0.634, 0.264], [
+            0.608, 0.318], [0.556, 0.215],
+        [0.403, 0.237], [0.481, 0.149], [0.437, 0.211], [
+            0.666, 0.091], [0.243, 0.267],
+        [0.245, 0.057], [0.343, 0.099], [0.639, 0.161], [
+            0.657, 0.198], [0.360, 0.370],
+        [0.593, 0.042], [0.719, 0.103], [0.359, 0.188], [
+            0.339, 0.241], [0.282, 0.257],
+        [0.748, 0.232], [0.714, 0.346], [0.483, 0.312], [
+            0.478, 0.437], [0.525, 0.369],
+        [0.751, 0.489], [0.532, 0.472], [0.473, 0.376], [0.725, 0.445], [0.446, 0.459]])
 
     # 执行并画图
     k = 4
-    kCentralPoints, clusterAssment = kMeans(rawData, k)
+    kCentralPoints, clusterAssment = biKmeans(rawData, k)
     drawCluster(kCentralPoints, clusterAssment, rawData, k)
 
     # print(central)
